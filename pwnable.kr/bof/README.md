@@ -70,6 +70,9 @@ We can see the stack with the following command.
 0xffffd140:     0xdeadbeef      0x00000000
 ```
 we know the **func()** is initialized with 0xdeadbeef value and it's the current value of the **key** variable. we also know the value of **overflowme** variable (0x41414141). so when we calculate how many A (0x41) characters we should enter to override the **key** variable and write **0xcafebabe** into its address. 
-so when we calculate the space between the **overflowme** variable and **key** variable we find that we need to enter 52 bytes (character) to start overriding the **key** variable. the payload to solve the challenge is **A&ast;52+0xcafebabe** but we type 0xcafebabe in reverse order because the system is little endian.
+so when we calculate the space between the **overflowme** variable and **key** variable we find that we need to enter 52 bytes (character) to start overriding the **key** variable. the payload to solve the challenge is **A&ast;52+0xcafebabe** but we type 0xcafebabe in reverse order because the system is little endian. the following command exploits the bof and gives you the shell to print the flag.
+```
+(python -c "print 'A'*52+'\xbe\xba\xfe\xca'" && cat) | nc pwnable.kr 9000
+```
 
 run the python code to get the flag. :)
